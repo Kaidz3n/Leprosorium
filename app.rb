@@ -2,6 +2,7 @@ require 'rubygems'
 require 'sinatra'
 require 'sinatra/reloader'
 require 'sqlite3'
+require 'pry'
 
 def init_db
 	@db = SQLite3::Database.new 'leprosorium.db'
@@ -59,13 +60,21 @@ end
 
 # вывод информации о посте
 
+
 get '/details/:post_id' do
+
+	
+
 	post_id = params[:post_id]
 
 	results = @db.execute 'select * from Posts where id = ?', [post_id]
+	binding.pry
 	@row = results[0]
 
 	erb :details
+
+
+
 	
 end
 
@@ -77,6 +86,20 @@ post '/details/:post_id' do
 
 	content = params[:content]
 
-	erb "You typed comment #{content} for post #{post_id}"
+	@db.execute 'insert into Comments 
+		(
+			content,
+			created_date, 
+			post_id
+		)
+			values 
+		(
+			?, 
+			datetime(),
+			?
+		)', [content,post_id]
+
+	# перенаправление на страницу поста
+	redirect to ('/details/' + post_id)
 
 end
